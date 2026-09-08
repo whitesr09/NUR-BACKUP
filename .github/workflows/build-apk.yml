@@ -7,6 +7,7 @@ on:
     paths:
       - "web/**"
       - "android-icon/**"
+      - "tests/**"
       - "package.json"
       - "capacitor.config.json"
       - "signing/**"
@@ -15,12 +16,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: nur-release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       NUR_SIGNING_PASSWORD: ${{ secrets.NUR_SIGNING_PASSWORD }}
-
+      APP_ID: app.nur.intentional
+      EXPECTED_CERT_SHA256: ec1880cc651af8fe85dc806d1e89a497b1d22dc7f55ec2c7c2e5cef133cf1bcc
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,20 +37,26 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Require permanent signing secret
-        shell: bash
-        run: |
-          test -n "$NUR_SIGNING_PASSWORD" || { echo "::error::Repository secret NUR_SIGNING_PASSWORD is missing."; exit 1; }
-
-      - name: Restore permanent NUR signing key
-        shell: bash
-        run: |
-          mkdir -p signing/runtime
-          base64 -d signing/nur-release.p12.b64 > signing/runtime/nur-release.p12
-          keytool -list -storetype PKCS12 -keystore signing/runtime/nur-release.p12 -storepass "$NUR_SIGNING_PASSWORD" -alias nur-release >/dev/null
-
       - name: Install dependencies
         run: npm install
+
+      - name: Run experience regression tests
+        run: node --test tests/*.test.cjs
+
+      - name: Require and verify original signing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NUR_SIGNING_PASSWORD" || { echo "::error::Repository secret NUR_SIGNING_PASSWORD is missing."; exit 1; }
+          mkdir -p signing/runtime
+          base64 -d signing/nur-release.p12.b64 > signing/runtime/nur-release.p12
+          keytool -exportcert -storetype PKCS12 -keystore signing/runtime/nur-release.p12 -storepass "$NUR_SIGNING_PASSWORD" -alias nur-release -file signing/runtime/nur-cert.der >/dev/null
+          ACTUAL="$(sha256sum signing/runtime/nur-cert.der | cut -d' ' -f1)"
+          if [ "$ACTUAL" != "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::The keystore does not match the original NUR signing certificate. Refusing to create an incompatible update."
+            exit 1
+          fi
+          echo "Original NUR signing identity verified."
 
       - name: Install image tools
         shell: bash
@@ -58,7 +70,7 @@ jobs:
       - name: Sync web app
         run: npx cap sync android
 
-      - name: Apply uploaded high-resolution NUR launcher icon
+      - name: Apply original high-resolution NUR launcher icon
         shell: bash
         run: |
           set -euo pipefail
@@ -76,9 +88,8 @@ jobs:
             cp "$DEST/ic_launcher.png" "$DEST/ic_launcher_round.png"
           done
           rm -f "$ROOT/mipmap-anydpi-v26/ic_launcher.xml" "$ROOT/mipmap-anydpi-v26/ic_launcher_round.xml"
-          identify "$ROOT/mipmap-xxxhdpi/ic_launcher.png"
 
-      - name: Eliminate native white launch flash
+      - name: Preserve dark native launch background
         shell: bash
         run: |
           set -euo pipefail
@@ -100,19 +111,14 @@ jobs:
           from pathlib import Path
           import re
           p=Path('android/app/src/main/res/values/styles.xml')
-          s=p.read_text()
-          s=s.replace('@drawable/splash','@drawable/nur_launch_background')
+          s=p.read_text().replace('@drawable/splash','@drawable/nur_launch_background')
           for name in ('AppTheme','AppTheme.NoActionBar','AppTheme.NoActionBarLaunch'):
               pat=rf'(<style name="{re.escape(name)}"[^>]*>)(.*?)(</style>)'
               m=re.search(pat,s,re.S)
               if not m:
                   continue
               body=m.group(2)
-              items={
-                  'android:windowBackground':'@drawable/nur_launch_background',
-                  'android:statusBarColor':'#030207',
-                  'android:navigationBarColor':'#030207'
-              }
+              items={'android:windowBackground':'@drawable/nur_launch_background','android:statusBarColor':'#030207','android:navigationBarColor':'#030207'}
               for key,val in items.items():
                   item_pat=rf'<item name="{re.escape(key)}">.*?</item>'
                   replacement=f'<item name="{key}">{val}</item>'
@@ -137,42 +143,58 @@ jobs:
           </resources>
           XML
 
-      - name: Set monotonic Android version
+      - name: Set update-compatible Android version
         shell: bash
         run: |
-          VERSION_CODE=$((2000 + GITHUB_RUN_NUMBER))
-          VERSION_NAME="2.0.${GITHUB_RUN_NUMBER}"
-          python3 - <<PY
+          set -euo pipefail
+          VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))
+          VERSION_NAME="2.1.${GITHUB_RUN_NUMBER}"
+          export VERSION_CODE VERSION_NAME
+          python3 - <<'PY'
           from pathlib import Path
-          import re
+          import os,re
           p=Path('android/app/build.gradle')
           s=p.read_text()
-          s=re.sub(r'versionCode\s+\d+', 'versionCode ${VERSION_CODE}', s)
-          s=re.sub(r'versionName\s+"[^"]+"', 'versionName "${VERSION_NAME}"', s)
-          p.write_text(s)
+          code,n=re.subn(r'versionCode\s+\d+', 'versionCode '+os.environ['VERSION_CODE'], s)
+          if n!=1: raise SystemExit('Expected exactly one Android versionCode')
+          code,n=re.subn(r'versionName\s+"[^"]+"', 'versionName "'+os.environ['VERSION_NAME']+'"', code)
+          if n!=1: raise SystemExit('Expected exactly one Android versionName')
+          p.write_text(code)
           PY
-          echo "Building version $VERSION_NAME ($VERSION_CODE)"
+          echo "Building $VERSION_NAME ($VERSION_CODE)"
+          echo "NUR_VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "NUR_VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
 
       - name: Build unsigned release APK
         working-directory: android
         run: ./gradlew assembleRelease
 
-      - name: Align and sign release APK
+      - name: Align, sign, and verify release APK
         shell: bash
         run: |
+          set -euo pipefail
           BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
           ZIPALIGN="$BUILD_TOOLS/zipalign"
           APKSIGNER="$BUILD_TOOLS/apksigner"
+          AAPT="$BUILD_TOOLS/aapt"
           UNSIGNED="android/app/build/outputs/apk/release/app-release-unsigned.apk"
           ALIGNED="android/app/build/outputs/apk/release/NUR-v2-aligned.apk"
           SIGNED="android/app/build/outputs/apk/release/NUR-v2.apk"
+          test -f "$UNSIGNED"
           "$ZIPALIGN" -f -p 4 "$UNSIGNED" "$ALIGNED"
           "$APKSIGNER" sign --ks signing/runtime/nur-release.p12 --ks-type PKCS12 --ks-key-alias nur-release --ks-pass env:NUR_SIGNING_PASSWORD --key-pass env:NUR_SIGNING_PASSWORD --out "$SIGNED" "$ALIGNED"
           "$APKSIGNER" verify --verbose --print-certs "$SIGNED"
+          CERT="$("$APKSIGNER" verify --print-certs "$SIGNED" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr -d ':[:space:]' | tr '[:upper:]' '[:lower:]')"
+          test "$CERT" = "$EXPECTED_CERT_SHA256" || { echo "::error::Unexpected signing certificate"; exit 1; }
+          BADGING="$("$AAPT" dump badging "$SIGNED")"
+          echo "$BADGING" | grep -F "name='$APP_ID'" >/dev/null
+          echo "$BADGING" | grep -F "versionCode='$NUR_VERSION_CODE'" >/dev/null
+          echo "Verified package, version, and original signing certificate."
 
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: NUR-v2-signed-APK
+          name: NUR-Level2-signed-APK
           path: android/app/build/outputs/apk/release/NUR-v2.apk
           if-no-files-found: error
+          retention-days: 30
