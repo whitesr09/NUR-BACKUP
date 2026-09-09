@@ -26,7 +26,7 @@ jobs:
     env:
       NUR_SIGNING_PASSWORD: ${{ secrets.NUR_SIGNING_PASSWORD }}
       APP_ID: app.nur.intentional
-      EXPECTED_CERT_SHA256: ec1880cc651af8fe85dc806d1e89a497b1d22dc7f55ec2c7e5cef133cf1bcc
+      EXPECTED_CERT_SHA256: ec1880cc651af8fe85dc806d1e89a497b1d22dc7f55ec2c7c2e5cef133cf1bcc
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
