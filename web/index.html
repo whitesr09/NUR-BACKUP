@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="v2-daily-light.css">
   <link rel="stylesheet" href="nur-experience.css">
   <link rel="stylesheet" href="nur-level3.css">
+  <link rel="stylesheet" href="nur-vault.css">
   <title>NUR</title>
 </head>
 <body>
@@ -58,7 +59,7 @@
         <p id="lightCopy" class="light-copy">Remember Me; I will remember you.</p>
         <div id="lightVerseSource" class="light-verse-source">Qur’an 2:152</div>
         <div id="lightWeights" class="light-weights"></div>
-        <svg class="mosque-silhouette" viewBox="0 0 1000 250" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gMosque" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#19304d" stop-opacity=".7"/><stop offset="1" stop-color="#071221" stop-opacity=".96"/></linearGradient></defs><rect x="0" y="195" width="1000" height="55" fill="url(#gMosque)"/><g fill="url(#gMosque)" stroke="#b58b3c" stroke-opacity=".18"><path d="M50 195h55v-75h10v-18h10v18h10v75z"/><path d="M865 195h55v-75h10v-18h10v18h10v75z"/><path d="M210 195h90v-53c0-34 45-55 45-55s45 21 45 55v53z"/><path d="M610 195h90v-53c0-34 45-55 45-55s45 21 45 55v53z"/><path d="M390 195h220v-65c0-42 55-68 110-68-40 12-68 34-68 68v65z" opacity=".55"/><path d="M365 195h270v-36c0-65 68-105 135-105-44 15-80 48-80 105v36z" opacity=".25"/></g></svg>
+        <svg class="mosque-silhouette" viewBox="0 0 1000 250" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gMosque" x1="0" x2="0" y1="1"><stop offset="0" stop-color="#19304d" stop-opacity=".7"/><stop offset="1" stop-color="#071221" stop-opacity=".96"/></linearGradient></defs><rect x="0" y="195" width="1000" height="55" fill="url(#gMosque)"/><g fill="url(#gMosque)" stroke="#b58b3c" stroke-opacity=".18"><path d="M50 195h55v-75h10v-18h10v18h10v75z"/><path d="M865 195h55v-75h10v-18h10v75z"/><path d="M210 195h90v-53c0-34 45-55 45-55s45 21 45 55v53z"/><path d="M610 195h90v-53c0-34 45-55 45-55s45 21 45 55v53z"/><path d="M390 195h220v-65c0-42 55-68 110-68-40 12-68 34-68 68v65z" opacity=".55"/><path d="M365 195h270v-36c0-65 68-105 135-105-44 15-80 48-80 105v36z" opacity=".25"/></g></svg>
       </article>
       <article class="panel prayers-panel"><div class="panel-head"><div><span class="eyebrow">SALAH</span><h2>Five prayers</h2></div><button class="link-btn" data-open="prayers"><span id="prayerCount">0 / 5</span> ↗</button></div><div id="prayerList" class="prayer-list"></div><div class="prayer-progress-zone"><div class="thin-progress"><i id="prayerProgressBar"></i></div></div></article>
       <article class="panel tasks-panel"><div class="panel-head"><div><span class="eyebrow">AMANAH</span><h2>Today’s tasks</h2></div><div class="metric"><strong id="taskCount">0 / 0</strong><button class="link-btn" data-open="tasks">Manage ↗</button></div></div><div id="taskPreview" class="preview-list empty-state"></div><div id="taskPillars" class="task-pillars"></div></article>
@@ -76,5 +77,7 @@
   <script src="nur-level3.js" defer></script>
   <script src="v2-motion.js" defer></script>
   <script src="nur-experience.js" defer></script>
+  <script src="nur-vault.js" defer></script>
+  <script src="nur-vault-ui.js" defer></script>
 </body>
 </html>
