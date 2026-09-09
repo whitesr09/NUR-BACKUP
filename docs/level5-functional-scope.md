@@ -1,0 +1,3 @@
+# Functional scope
+
+The next source increment contains three independently usable areas: Quran & Dhikr reading, Prayer Time Companion, and optional NUR AI. Quran reading includes attributed content, Arabic/translation display, search, bookmarks and last-read position. Prayer Time Companion includes selected coordinates, method, madhhab, manual offsets, today's and upcoming times, and explicit reminder preferences. NUR AI includes an API-key entry, model selection, connection test, chat, delete/replace key controls, and opt-in context. No religious content is invented, and no API key is needed for offline use. Source integration and tests are required before release.
