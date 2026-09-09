@@ -50,10 +50,11 @@ test('system appearance resolves light and dark palettes correctly', () => {
 });
 
 test('every JavaScript entrypoint compiles and the experience loads after the existing modules', () => {
-  for(const file of ['app.js','v2-persistent-items.js','v2-motion.js','nur-experience.js','sw.js']) new vm.Script(read(file),{filename:file});
+  const expected=['app.js','v2-persistent-items.js','nur-power-data.js','nur-level3.js','v2-motion.js','nur-experience.js'];
+  for(const file of [...expected,'sw.js']) new vm.Script(read(file),{filename:file});
   const html=read('index.html');
   assert.match(html,/href="nur-experience\.css"/);
   const files=[...html.matchAll(/<script\s+src="([^"]+)"/g)].map(match=>match[1]);
-  assert.deepEqual(files.slice(-4),['app.js','v2-persistent-items.js','v2-motion.js','nur-experience.js']);
+  assert.deepEqual(files,expected);
   assert.equal(html.includes('material-components'),false);
 });
