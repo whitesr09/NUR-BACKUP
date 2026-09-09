@@ -1,0 +1,21 @@
+/* NUR reading catalogue. Quran wording is loaded from named source editions, not generated. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.NurDeenContent=api;})(typeof window!=='undefined'?window:null,function(){
+'use strict';
+const COUNTS=[7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
+const NAMES=['Al-Fatihah','Al-Baqarah','Ali Imran','An-Nisa','Al-Maidah','Al-Anam','Al-Araf','Al-Anfal','At-Tawbah','Yunus','Hud','Yusuf','Ar-Rad','Ibrahim','Al-Hijr','An-Nahl','Al-Isra','Al-Kahf','Maryam','Ta-Ha','Al-Anbiya','Al-Hajj','Al-Muminun','An-Nur','Al-Furqan','Ash-Shuara','An-Naml','Al-Qasas','Al-Ankabut','Ar-Rum','Luqman','As-Sajdah','Al-Ahzab','Saba','Fatir','Ya-Sin','As-Saffat','Sad','Az-Zumar','Ghafir','Fussilat','Ash-Shura','Az-Zukhruf','Ad-Dukhan','Al-Jathiyah','Al-Ahqaf','Muhammad','Al-Fath','Al-Hujurat','Qaf','Adh-Dhariyat','At-Tur','An-Najm','Al-Qamar','Ar-Rahman','Al-Waqiah','Al-Hadid','Al-Mujadilah','Al-Hashr','Al-Mumtahanah','As-Saff','Al-Jumuah','Al-Munafiqun','At-Taghabun','At-Talaq','At-Tahrim','Al-Mulk','Al-Qalam','Al-Haqqah','Al-Maarij','Nuh','Al-Jinn','Al-Muzzammil','Al-Muddaththir','Al-Qiyamah','Al-Insan','Al-Mursalat','An-Naba','An-Naziat','Abasa','At-Takwir','Al-Infitar','Al-Mutaffifin','Al-Inshiqaq','Al-Buruj','At-Tariq','Al-Ala','Al-Ghashiyah','Al-Fajr','Al-Balad','Ash-Shams','Al-Layl','Ad-Duha','Ash-Sharh','At-Tin','Al-Alaq','Al-Qadr','Al-Bayyinah','Az-Zalzalah','Al-Adiyat','Al-Qariah','At-Takathur','Al-Asr','Al-Humazah','Al-Fil','Quraysh','Al-Maun','Al-Kawthar','Al-Kafirun','An-Nasr','Al-Masad','Al-Ikhlas','Al-Falaq','An-Nas'];
+const EDITIONS={arabic:{id:'quran-uthmani',label:'Uthmani Arabic',source:'AlQuran.Cloud / Uthmani edition'},'en.sahih':{id:'en.sahih',label:'Saheeh International',source:'Saheeh International'},'en.pickthall':{id:'en.pickthall',label:'Marmaduke Pickthall',source:'Marmaduke Pickthall'},'en.yusufali':{id:'en.yusufali',label:'Abdullah Yusuf Ali',source:'Abdullah Yusuf Ali'},'en.asad':{id:'en.asad',label:'Muhammad Asad',source:'Muhammad Asad'}};
+const API='https://api.alquran.cloud/v1';
+const DHIKR=[
+ {id:'tasbih',title:'Subhan Allah wa bihamdihi',arabic:'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',transliteration:'Subhan Allah wa bihamdihi',meaning:'Glory be to Allah and praise be to Him.',target:100,reference:'Sahih al-Bukhari 6405; Sahih Muslim 2691',url:'https://sunnah.com/bukhari:6405',note:'The cited narrations mention one hundred repetitions. This counter is a personal aid.'},
+ {id:'good',title:'Good in both worlds',verse:'2:201',reference:'Quran 2:201',url:'https://quran.com/2/201'},
+ {id:'steadfast',title:'Steadfast hearts',verse:'3:8',reference:'Quran 3:8',url:'https://quran.com/3/8'},
+ {id:'yunus',title:'Supplication of Yunus',verse:'21:87',reference:'Quran 21:87',url:'https://quran.com/21/87'},
+ {id:'family',title:'Comfort of our eyes',verse:'25:74',reference:'Quran 25:74',url:'https://quran.com/25/74'}
+];
+function validateCorpus(raw,edition='quran-uthmani'){
+ const data=raw?.data;if(raw?.code!==200||!Array.isArray(data?.surahs)||data.surahs.length!==114)throw Error('Incomplete Quran corpus.');
+ let total=0;const chapters=data.surahs.map((s,i)=>{if(s.number!==i+1||s.edition?.identifier!==edition||!Array.isArray(s.ayahs)||s.ayahs.length!==COUNTS[i])throw Error('Unexpected Quran chapter or edition.');const verses=s.ayahs.map((v,j)=>{if(v.numberInSurah!==j+1||typeof v.text!=='string'||!v.text.trim())throw Error('Incomplete Quran verse.');return {key:(i+1)+':'+(j+1),text:v.text};});total+=verses.length;return {chapter:i+1,name:NAMES[i],count:verses.length,edition,editionName:s.edition.englishName||s.edition.name,verses};});
+ if(total!==6236)throw Error('The Quran corpus does not contain 6,236 verses.');return chapters;
+}
+return {COUNTS,NAMES,EDITIONS,API,DHIKR,validateCorpus};
+});
