@@ -7,14 +7,12 @@
   const $ = s => document.querySelector(s);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
   const button = (label, cls, fn) => { const n = el('button', cls, label); n.type = 'button'; if (fn) n.addEventListener('click', fn); return n; };
-  const safe = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
   let liveKey = todayKey(), activeView = 'tasks', selectedId = null, previousFocus = null, initialized = false, rolling = false;
-  let noticeTimer;
   const notify = message => { const n = $('#nurPowerNotice'); if (n) n.textContent = message; if (typeof toast === 'function') toast(message); };
   const ensureWritable = () => { if (currentDate !== todayKey()) throw Error('Return to today before editing your active lists.'); };
   function write(next, message, repaint = true) {
-    const serialized = JSON.stringify(next);
-    try { localStorage.setItem(STORAGE, serialized); }
+    let serialized;
+    try { serialized = JSON.stringify(next); localStorage.setItem(STORAGE, serialized); }
     catch (error) { notify('Unable to save. Your previous data is unchanged.'); return false; }
     state = next;
     if (repaint) render();
@@ -22,22 +20,22 @@
     return true;
   }
   function change(operation, message) {
-    try { roll(); ensureWritable(); const next = operation(state, todayKey()); return write(next, message); }
+    try { if (!roll()) return false; ensureWritable(); const next = operation(state, todayKey()); return write(next, message); }
     catch (error) { notify(error.message || 'Unable to save this change.'); return false; }
   }
   function roll() {
-    if (rolling) return;
+    if (rolling) return true;
     const now = todayKey();
-    if (now === liveKey) return;
+    if (now === liveKey) return true;
     rolling = true;
     try {
       const next = P.reconcile(state, now);
       const wasToday = currentDate === liveKey;
-      if (write(next, null, false)) {
-        liveKey = now;
-        if (wasToday) currentDate = now;
-      }
-    } catch (error) { notify('The new day could not be initialized.'); }
+      if (!write(next, null, false)) return false;
+      liveKey = now;
+      if (wasToday) currentDate = now;
+      return true;
+    } catch (error) { notify('The new day could not be initialized.'); return false; }
     finally { rolling = false; }
   }
   function initialize() {
@@ -55,8 +53,7 @@
   initialize();
   if (!initialized) return;
 
-  /* The existing V2 renderer and Muhasaba editor remain in place. These
-     handlers supersede only task actions, so there is one task data owner. */
+  /* V2 continues to own prayers, Muhasaba, history, notes and money. */
   const oldReadDay = readDay;
   readDay = function(k = currentDate) { if (k === liveKey && !rolling) roll(); return oldReadDay(k); };
   const oldRender = render;
@@ -77,13 +74,11 @@
   const oldOpenModal = openModal;
   openModal = function(type) { if (type === 'tasks') { open('tasks'); return; } return oldOpenModal.apply(this, arguments); };
 
-  /* Build the Goals card before Appearance Studio gathers the dashboard. */
   const frame = $('.dashboard-frame');
   const goals = el('article','panel nur-goals-panel');
   goals.id = 'nurGoalsPanel';
   goals.innerHTML = '<div class="panel-head"><div><span class="eyebrow">LONG-TERM GROWTH</span><h2>Goals & milestones</h2></div></div><div id="nurGoalsPreview"></div>';
-  const manageGoals = button('Manage goals ↗','link-btn',() => open('goals'));
-  goals.querySelector('.panel-head').appendChild(manageGoals);
+  goals.querySelector('.panel-head').appendChild(button('Manage goals ↗','link-btn',() => open('goals')));
   frame.insertBefore(goals,frame.querySelector('.frame-foot'));
 
   const dialog = el('dialog','nur-power-dialog');
@@ -105,7 +100,7 @@
     if (!initialized) return;
     activeView = view; selectedId = id; previousFocus = document.activeElement;
     draw();
-    if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open','');
+    if (!dialog.open) { if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open',''); }
     head.querySelector('button').focus();
   }
   function close() {
@@ -130,9 +125,7 @@
     if (s.type === 'weekdays') return s.days.map(i=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]).join(', ') || 'No weekdays selected';
     return 'Every day';
   }
-  function confirmRemove(message, action) {
-    if (window.confirm(message)) action();
-  }
+  function confirmRemove(message, action) { if (window.confirm(message)) action(); }
   function draw() {
     tabs.replaceChildren(); content.replaceChildren(); notice.textContent='';
     for (const [id,label] of [['tasks','Amanah'],['goals','Goals']]) {
@@ -145,11 +138,10 @@
   function drawTasks() {
     const definitions=state.meta.persistentTasks||[];
     const today=readDay(todayKey());
-    const summary=el('p','nur-power-help','Your responsibilities stay saved. Only the checkboxes reset on their scheduled days.');content.append(summary);
-    const add=button('+ New responsibility','nur-power-primary',()=>{selectedId='new';draw();});content.append(add);
+    content.append(el('p','nur-power-help','Your responsibilities stay saved. Only the checkboxes reset on their scheduled days.'));
+    content.append(button('+ New responsibility','nur-power-primary',()=>{selectedId='new';draw();}));
     if (selectedId==='new'||definitions.some(x=>x.id===selectedId)) {
-      content.append(taskForm(definitions.find(x=>x.id===selectedId)));
-      return;
+      content.append(taskForm(definitions.find(x=>x.id===selectedId)));return;
     }
     const list=el('div','nur-power-list');
     if(!definitions.length)list.append(el('p','nur-power-empty','No responsibilities yet. Add one to begin.'));
@@ -158,7 +150,7 @@
       detail.append(el('strong','',x.title),el('small','',x.category+' · '+scheduleText(x.schedule)));
       const active=today.tasks.find(t=>t.id===x.id);
       if(active){const check=el('input');check.type='checkbox';check.checked=!!active.done;check.setAttribute('aria-label','Complete '+x.title);
-        check.addEventListener('change',()=>{if(change((s,k)=>P.toggleTask(s,x.id,k),'Amanah updated'))draw();});row.append(check);}
+        check.addEventListener('change',()=>{if(change((s,k)=>P.toggleTask(s,x.id,k),'Amanah updated'))draw();else check.checked=!check.checked;});row.append(check);}
       else row.append(el('span','nur-power-not-due','Not due'));
       const edit=button('Edit','nur-power-small',()=>{selectedId=x.id;draw();});
       row.append(detail,edit);list.append(row);
@@ -225,10 +217,11 @@
     });content.append(list);
   }
   function goalForm(item) {
+    const detail=el('div','nur-power-goal-detail');
     const form=el('form','nur-power-form');form.append(el('h3','',item?'Goal details':'Create a goal'));
     const title=field('Goal','title',item?.title||'');title.querySelector('input').required=true;
-    const target=field('Target','target',item?.target||1,'number');target.querySelector('input').min='0.000001';target.querySelector('input').step='any';target.querySelector('input').required=true;
-    const current=field('Current progress','current',item?.current||0,'number');current.querySelector('input').min='0';current.querySelector('input').step='any';current.querySelector('input').required=true;
+    const target=field('Target','target',item?.target??1,'number');target.querySelector('input').min='0.000001';target.querySelector('input').step='any';target.querySelector('input').required=true;
+    const current=field('Current progress','current',item?.current??0,'number');current.querySelector('input').min='0';current.querySelector('input').step='any';current.querySelector('input').required=true;
     form.append(title,field('Unit','unit',item?.unit||'steps'),target,current,field('Target date (optional)','dueOn',item?.dueOn||'','date'));
     const actions=el('div','nur-power-actions');const submit=el('button','nur-power-primary',item?'Save goal':'Create goal');submit.type='submit';actions.append(submit,button('Back','nur-power-small',()=>{selectedId=null;draw();}));form.append(actions);
     form.addEventListener('submit',e=>{
@@ -238,18 +231,21 @@
       const ok=change((s,k)=>item?P.editGoal(s,item.id,values):P.addGoal(s,values,k),item?'Goal saved':'Goal created');
       if(ok){selectedId=item?.id||null;draw();}
     });
+    detail.append(form);
     if(item){
-      const milestones=el('div','nur-power-milestones');milestones.append(el('h3','','Milestones'));
+      const milestones=el('section','nur-power-milestones');milestones.append(el('h3','','Milestones'));
       item.milestones.forEach(m=>{
-        const row=el('div','nur-power-row');const label=el('label','nur-power-milestone');const c=el('input');c.type='checkbox';c.checked=m.done;c.addEventListener('change',()=>{if(change(s=>P.toggleMilestone(s,item.id,m.id),'Milestone updated'))draw();});
+        const row=el('div','nur-power-row');const label=el('label','nur-power-milestone');const c=el('input');c.type='checkbox';c.checked=m.done;c.addEventListener('change',()=>{if(change(s=>P.toggleMilestone(s,item.id,m.id),'Milestone updated'))draw();else c.checked=!c.checked;});
         label.append(c,el('span','',m.title));row.append(label,button('×','nur-power-small',()=>confirmRemove('Remove this milestone?',()=>{if(change(s=>P.removeMilestone(s,item.id,m.id),'Milestone removed'))draw();})));milestones.append(row);
       });
+      /* A separate sibling form prevents adding a milestone from submitting
+         the goal editor and accidentally overwriting its numeric progress. */
       const add=el('form','nur-power-form-line');const input=el('input','nur-power-input');input.placeholder='Add a milestone';input.required=true;input.maxLength=180;const submit=el('button','nur-power-small','Add');submit.type='submit';add.append(input,submit);
-      add.addEventListener('submit',e=>{e.preventDefault();const title=input.value.trim();if(change(s=>P.addMilestone(s,item.id,title),'Milestone added'))draw();});milestones.append(add);form.append(milestones);
+      add.addEventListener('submit',e=>{e.preventDefault();const title=input.value.trim();if(change(s=>P.addMilestone(s,item.id,title),'Milestone added'))draw();});milestones.append(add);detail.append(milestones);
       const danger=el('div','nur-power-actions');danger.append(button(item.archived?'Restore goal':'Archive goal','nur-power-small',()=>{if(change(s=>P.editGoal(s,item.id,{archived:!item.archived}),'Goal updated'))draw();}));
-      danger.append(button('Delete goal','nur-power-danger',()=>confirmRemove('Permanently delete this goal and its milestones?',()=>{if(change(s=>P.removeGoal(s,item.id),'Goal deleted')){selectedId=null;draw();}})));form.append(danger);
+      danger.append(button('Delete goal','nur-power-danger',()=>confirmRemove('Permanently delete this goal and its milestones?',()=>{if(change(s=>P.removeGoal(s,item.id),'Goal deleted')){selectedId=null;draw();}})));detail.append(danger);
     }
-    return form;
+    return detail;
   }
   window.NURPowerUI={open,close,draw,drawGoals,getState:()=>clone(state)};
   window.addEventListener('focus',()=>{roll();if(dialog.open)draw();});
