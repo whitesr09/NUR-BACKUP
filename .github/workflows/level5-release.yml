@@ -30,7 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Apply integration fixes
-        run: node scripts/level5-fixes.cjs
+        run: |
+          node scripts/level5-fixes.cjs
+          node scripts/level5-regression-fixes.cjs
       - name: Prepare complete attributed Arabic Quran
         run: node scripts/prepare-quran.cjs
       - name: Check all JavaScript syntax
@@ -46,7 +48,7 @@ jobs:
           set -euo pipefail
           git config user.name 'NUR Build Bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add web/nur-deen-app.js web/nur-deen-store.js web/vendor/adhan.js web/assets/quran-uthmani.json tests/deen.test.cjs
+          git add web/nur-deen-app.js web/nur-deen-store.js web/vendor/adhan.js web/assets/quran-uthmani.json web/sw.js tests/deen.test.cjs tests/level4-integration.test.cjs
           git diff --cached --quiet || git commit -m 'Integrate and verify Level 5 Deen companion'
           git push origin HEAD:level-5/deen-companion
       - name: Install image tools
