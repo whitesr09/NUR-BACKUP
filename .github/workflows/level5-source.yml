@@ -1,0 +1,19 @@
+name: Level 5 source snapshot
+on:
+  push:
+    branches: [level-5/deen-companion]
+    paths: [.github/workflows/level5-source.yml]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package source without private runtime files
+        run: tar --exclude=.git --exclude=node_modules --exclude=signing/runtime -czf "$RUNNER_TEMP/nur-source.tar.gz" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NUR-Level5-source
+          path: ${{ runner.temp }}/nur-source.tar.gz
+          retention-days: 1
