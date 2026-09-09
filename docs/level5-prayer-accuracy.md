@@ -1,0 +1,3 @@
+# Prayer companion accuracy
+
+The five daily prayer times should be calculated with a documented method and local timezone, or imported from an identified source. Manual correction and per-prayer offsets must remain available. A calculated time is not a verified local mosque time. Latitude, longitude, time zone, date, method and madhhab must be validated. Location permission is requested only after an explicit user action. Never silently enable reminders, and never mark a prayer completed based on a timer. Native notification delivery, exact alarms and adhan playback are separately gated capabilities and must not be represented as working until tested on Android.
