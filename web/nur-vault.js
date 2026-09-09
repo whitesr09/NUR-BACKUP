@@ -27,7 +27,9 @@ function validateState(input){
   return clone(input);
 }
 function makeBackup(state,appearance,now=new Date().toISOString()){
-  return JSON.stringify({format:'nur-backup',version:1,exportedAt:now,state:validateState(state),appearance:appearance||null},null,2);
+  const raw=JSON.stringify({format:'nur-backup',version:1,exportedAt:now,state:validateState(state),appearance:appearance||null},null,2);
+  if(new TextEncoder().encode(raw).length>MAX_BYTES)throw Error('This backup exceeds 16 MB.');
+  return raw;
 }
 function inspect(raw,engine,today=localDate(),appearanceAPI){
   if(typeof raw!=='string'||new TextEncoder().encode(raw).length>MAX_BYTES)throw Error('The backup is empty or larger than 16 MB.');
@@ -43,12 +45,13 @@ function snapshot(storage){const values={};for(const k of [KEYS.data,KEYS.start,
 function apply(storage,values){for(const [k,v] of Object.entries(values)){if(v===null||v===undefined)storage.removeItem(k);else storage.setItem(k,v);}}
 function restore(storage,prepared){
   if(!object(prepared)||!object(prepared.state))throw Error('Validate a backup before restoring.');
+  const safeState=validateState(prepared.state);
   const before=snapshot(storage);
   const recovery=JSON.stringify({format:'nur-recovery',version:1,savedAt:new Date().toISOString(),values:before});
-  const next={...before,[KEYS.data]:JSON.stringify(prepared.state),[KEYS.start]:prepared.state.meta.startedOn||localDate()};
+  const next={...before,[KEYS.start]:safeState.meta.startedOn||localDate()};
   if(prepared.appearance!==null&&prepared.appearance!==undefined)next[KEYS.appearance]=JSON.stringify(prepared.appearance);
   storage.setItem(KEYS.recovery,recovery);
-  try{apply(storage,next);}catch(error){
+  try{apply(storage,next);storage.setItem(KEYS.data,JSON.stringify(safeState));}catch(error){
     try{apply(storage,before);}catch(rollbackError){throw Error('Restore failed and automatic rollback was incomplete. Your recovery copy is still saved.');}
     throw Error('Restore failed. Your previous data has been restored.');
   }
