@@ -7,7 +7,6 @@ edit('tests/deen.test.cjs',[
  ['crypto:webcrypto,indexedDB,URL,console','crypto:webcrypto,indexedDB,URL,console,btoa,atob']
 ]);
 edit('web/nur-deen-app.js',[
- ["let tab='reading'","let tab='reading'"],
  ["searchResults=[],draft=''","searchResults=[],searchDraft='',draft=''"],
  ["const q=field('Search downloaded Quran text','');","const q=field('Search downloaded Quran text',searchDraft);q.input.addEventListener('input',()=>searchDraft=q.input.value);"],
  ["const value=q.input.value.trim();run(async()=>","const value=q.input.value.trim();searchDraft=value;run(async()=>"],
@@ -16,5 +15,10 @@ edit('web/nur-deen-app.js',[
  ["key.value='';pass.value='';","key.input.value='';pass.input.value='';"],
  ["content.append(row(send,cancelButton(),button('Clear conversation'","send.dataset.network='true';send.disabled=busy;content.append(row(send,cancelButton(),button('Clear conversation'"],
  ["if(!table){content.append(button('Calculate timetable'","if(table&&(table.date!==(selectedDate||service.today(l.timeZone))||table.location.latitude!==l.latitude||table.location.longitude!==l.longitude))table=null;\n if(!table){content.append(button('Calculate timetable'"]
+]);
+edit('web/nur-deen-store.js',[
+ ["async function getFull(edition){if(cached.has(edition))return cached.get(edition);const full=await cache('get','full:'+edition).catch(()=>null);if(!full)return null;if(!Array.isArray(full)||full.length!==114)throw Error('Cached Quran edition is incomplete.');const checked=full.map((v,i)=>checkedChapter(v,i+1,edition));cached.set(edition,checked);return checked;}",
+ "async function getFull(edition){if(cached.has(edition))return cached.get(edition);let full=await cache('get','full:'+edition).catch(()=>null);if(!full&&edition==='quran-uthmani'){let response;try{response=await fetcher('./assets/quran-uthmani.json');}catch{}if(response?.ok){const raw=await response.text();if(raw.length>12000000)throw Error('Bundled Quran exceeds size limit.');const doc=JSON.parse(raw);if(doc.format!=='nur-quran-edition'||doc.edition!==edition||!Array.isArray(doc.chapters))throw Error('Bundled Quran edition is invalid.');full=doc.chapters;}}if(!full)return null;if(!Array.isArray(full)||full.length!==114)throw Error('Cached Quran edition is incomplete.');const checked=full.map((v,i)=>checkedChapter(v,i+1,edition));cached.set(edition,checked);await cache('put','full:'+edition,checked).catch(()=>{});return checked;}"],
+ ["async function download(edition,signal){if(!Object.values(C.EDITIONS).some(x=>x.id===edition))throw Error('Unknown Quran edition.');", "async function download(edition,signal){if(!Object.values(C.EDITIONS).some(x=>x.id===edition))throw Error('Unknown Quran edition.');const available=await getFull(edition);if(available)return {edition,chapters:114,verses:6236};"]
 ]);
 console.log('Level 5 integration fixes applied.');
