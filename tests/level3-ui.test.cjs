@@ -2,6 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const vm=require('node:vm');
 const {JSDOM}=require('jsdom');
 const root=path.resolve(__dirname,'..');
 const read=name=>fs.readFileSync(path.join(root,'web',name),'utf8');
@@ -21,7 +22,8 @@ function setup(){
   const seed={meta:{startedOn:yesterday,persistentListsV3:true,persistentTasks:[{id:'study',title:'Study',category:'College'}],persistentIntentions:[{id:'reflect',title:'Reflect'}]},days:{[yesterday]:{prayers:[true,false,false,false,false],tasks:[{id:'study',title:'Study',category:'College',done:true}],intentions:[{id:'reflect',title:'Reflect',done:true}],notes:[{id:'note',title:'Saved note',body:'Keep this'}],money:[{id:'money',title:'Food',amount:20,type:'expense'}]}}};
   w.localStorage.setItem('nur-data-v1',JSON.stringify(seed));
   w.localStorage.setItem('nur-first-run-date',yesterday);
-  for(const name of ['app.js','v2-persistent-items.js','nur-power-data.js','nur-level3.js','v2-motion.js','nur-experience.js'])w.eval(read(name));
+  const context=dom.getInternalVMContext();
+  for(const name of ['app.js','v2-persistent-items.js','nur-power-data.js','nur-level3.js','v2-motion.js','nur-experience.js'])vm.runInContext(read(name),context,{filename:name});
   const state=()=>w.NURPowerUI.getState();
   const click=(selector,text)=>{const nodes=[...w.document.querySelectorAll(selector)];const n=text?nodes.find(x=>x.textContent.trim()===text):nodes[0];assert.ok(n,`Missing control: ${selector} ${text||''}`);n.click();return n;};
   const submit=form=>form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
