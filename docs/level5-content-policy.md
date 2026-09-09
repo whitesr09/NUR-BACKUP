@@ -1,0 +1,3 @@
+# Quran and Dhikr provenance
+
+The Quran library must use a complete, verified edition or clearly identify its sample scope. Arabic text is immutable source material, while translation and transliteration are separate attributed layers. Store bookmarks and last-read position separately from Salah, Amanah, Muhasaba and Daily Light. Do not manufacture a reading streak or historical completion. Hadith content needs a collection, reference number, source edition and accurately represented grading when applicable. Generated AI summaries must never be displayed as Quran or hadith text. Offline content must remain usable without an API key.
