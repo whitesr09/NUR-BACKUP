@@ -1,0 +1,54 @@
+/* NUR Deen Companion — original visual identity, no Material 3. */
+.nur-deen-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));gap:var(--nur-gap,12px);margin:14px 0;min-width:0}
+.nur-deen-card{min-width:0;display:flex;flex-direction:column;gap:9px;scroll-margin-top:20px}
+.nur-deen-card h2{font-size:1.15rem;margin:2px 0;color:var(--nur-text,#f4f0e7)}
+.nur-deen-card .nur-power-help{flex:1;margin:0 0 5px;line-height:1.5}
+.nur-deen-card button{align-self:flex-start}
+.nur-deen-dialog{width:min(94vw,760px);max-width:760px;max-height:92dvh;padding:0;border:1px solid var(--nur-line,#32445c);border-radius:var(--nur-pro-radius,24px);background:var(--nur-surface,#071527);color:var(--nur-text,#f4f0e7);overflow:hidden;box-shadow:0 24px 85px #0007}
+.nur-deen-dialog::backdrop{background:#000b;backdrop-filter:blur(8px)}
+.nur-deen-dialog .nur-power-shell{display:flex;flex-direction:column;min-height:0;max-height:92dvh;width:100%;max-width:none;box-sizing:border-box;padding:0}
+.nur-deen-dialog .nur-power-head{padding:20px 22px 12px;flex:0 0 auto}
+.nur-deen-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin;padding:0 22px 12px;flex:0 0 auto}
+.nur-deen-tabs .nur-power-tab{flex:0 0 auto;white-space:nowrap}
+.nur-deen-content{overflow-y:auto;overscroll-behavior:contain;min-width:0;min-height:0;flex:1;padding:16px 22px 24px}
+.nur-deen-dialog .nur-power-notice{flex:0 0 auto;max-height:92px;overflow:auto;margin:0;padding:9px 22px 14px;border-top:1px solid var(--nur-line,#32445c);background:var(--nur-surface,#071527);white-space:pre-wrap;overflow-wrap:anywhere}
+.nur-deen-dialog .nur-power-notice:empty{display:none}
+.nur-deen-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0;margin:10px 0}
+.nur-deen-row>*{min-width:0;max-width:100%}
+.nur-deen-row>.nur-deen-field{flex:1 1 150px}
+.nur-deen-field{display:grid;gap:7px;min-width:0;color:var(--nur-muted,#a2afc1);font-size:.86rem}
+.nur-deen-field>span{font-weight:600;color:var(--nur-text,#f4f0e7)}
+.nur-deen-field input,.nur-deen-field select,.nur-deen-chat-input{box-sizing:border-box;width:100%;min-width:0;max-width:100%;font:inherit;color:var(--nur-text,#f4f0e7);background:var(--nur-card,#0b1b30);border:1px solid var(--nur-line,#32445c);border-radius:12px;padding:11px 12px}
+.nur-deen-field input:focus-visible,.nur-deen-field select:focus-visible,.nur-deen-chat-input:focus-visible,.nur-deen-dialog button:focus-visible,.nur-deen-link:focus-visible{outline:2px solid var(--nur-accent,#e6ad42);outline-offset:2px}
+.nur-deen-content h3{font-size:1.08rem;margin:23px 0 10px;color:var(--nur-text,#f4f0e7)}
+.nur-deen-content .nur-power-help{line-height:1.55;overflow-wrap:anywhere}
+.nur-deen-verse,.nur-deen-dhikr,.nur-deen-key-section{padding:16px;margin:12px 0;border:1px solid var(--nur-line,#32445c);border-radius:var(--nur-pro-radius,18px);background:var(--nur-card,#0b1b30);min-width:0;overflow-wrap:anywhere}
+.nur-deen-ref{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border-radius:99px;background:var(--nur-soft,#e6ad4220);color:var(--nur-accent,#e6ad42);font-size:.76rem;font-weight:700;font-variant-numeric:tabular-nums}
+.nur-deen-arabic{font-family:'Noto Naskh Arabic','Amiri',serif;font-size:clamp(1.45rem,5vw,2rem);line-height:2.05;text-align:right;direction:rtl;unicode-bidi:plaintext;color:var(--nur-text,#f4f0e7);margin:16px 0;word-break:normal;overflow-wrap:normal}
+.nur-deen-translation{font-family:var(--nur-ui-font,system-ui,sans-serif);font-size:.98rem;line-height:1.8;color:var(--nur-text,#f4f0e7);margin:8px 0}
+.nur-deen-source{display:block;color:var(--nur-muted,#a2afc1);font-size:.75rem;margin:7px 0 12px}
+.nur-deen-search-hit{display:block;width:100%;text-align:left;padding:12px;margin:6px 0;border:1px solid var(--nur-line,#32445c);border-radius:12px;background:var(--nur-card,#0b1b30);color:var(--nur-text,#f4f0e7);font:inherit;line-height:1.5;overflow-wrap:anywhere}
+.nur-deen-dhikr h4{margin:0 0 9px;font-size:1rem;color:var(--nur-text,#f4f0e7)}
+.nur-deen-count{min-width:48px;text-align:center;font-size:1.3rem;font-variant-numeric:tabular-nums;color:var(--nur-accent,#e6ad42)}
+.nur-deen-link{display:inline-flex;color:var(--nur-accent,#e6ad42);font-size:.82rem;line-height:1.5;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.nur-deen-form{display:grid;gap:12px;min-width:0}
+.nur-deen-offsets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:10px;padding:12px;border:1px solid var(--nur-line,#32445c);border-radius:14px}
+.nur-deen-offsets h3{grid-column:1/-1;margin:0 0 3px}
+.nur-deen-timetable{display:grid;gap:7px;margin:13px 0}
+.nur-deen-timetable .nur-deen-row{padding:10px 12px;border:1px solid var(--nur-line,#32445c);border-radius:14px;background:var(--nur-card,#0b1b30);margin:0}
+.nur-deen-timetable input[type=time]{max-width:150px;font-variant-numeric:tabular-nums}
+.nur-deen-next{padding:15px 17px;border:1px solid var(--nur-accent,#e6ad42);border-radius:14px;background:var(--nur-soft,#e6ad4220);font-size:1rem;font-weight:650;color:var(--nur-text,#f4f0e7);font-variant-numeric:tabular-nums}
+.nur-deen-check{display:flex;align-items:center;gap:10px;padding:12px 0;color:var(--nur-text,#f4f0e7);font-size:.9rem;line-height:1.5;min-width:0}
+.nur-deen-check input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--nur-accent,#e6ad42)}
+.nur-deen-key-section{display:grid;gap:9px;margin:0 0 16px}
+.nur-deen-key-section h3{margin:0}
+.nur-deen-chat{display:grid;gap:12px;min-width:0;max-height:390px;overflow-y:auto;padding:12px 0;scrollbar-width:thin}
+.nur-deen-message{max-width:94%;padding:13px 15px;border:1px solid var(--nur-line,#32445c);border-radius:16px;background:var(--nur-card,#0b1b30);overflow-wrap:anywhere}
+.nur-deen-message.user{justify-self:end;background:var(--nur-soft,#e6ad4220);border-color:var(--nur-accent,#e6ad42)}
+.nur-deen-message small{display:block;color:var(--nur-muted,#a2afc1);margin-bottom:6px;font-size:.73rem}
+.nur-deen-message p{white-space:pre-wrap;line-height:1.65;margin:0;color:var(--nur-text,#f4f0e7)}
+.nur-deen-chat-input{resize:vertical;min-height:90px;margin:10px 0}
+.nur-deen-dialog button[disabled]{opacity:.45;cursor:not-allowed}
+[data-nur-pro-motion=reduced] .nur-deen-dialog *,[data-nur-motion=reduced] .nur-deen-dialog *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+@media(max-width:480px){.nur-deen-cards{grid-template-columns:1fr}.nur-deen-dialog{width:100%;max-width:none;max-height:94dvh;margin:auto 0 0;border-radius:20px 20px 0 0}.nur-deen-dialog .nur-power-shell{max-height:94dvh}.nur-deen-dialog .nur-power-head{padding:16px 16px 10px}.nur-deen-tabs{padding:0 16px 10px}.nur-deen-content{padding:13px 16px 20px}.nur-deen-dialog .nur-power-notice{padding:9px 16px 12px}.nur-deen-verse,.nur-deen-dhikr,.nur-deen-key-section{padding:13px}.nur-deen-row{align-items:stretch}.nur-deen-row button{flex:0 1 auto}.nur-deen-timetable .nur-deen-row{align-items:center}.nur-deen-timetable .nur-deen-field{flex:1 1 120px}}
+@media(prefers-reduced-motion:reduce){.nur-deen-dialog::backdrop{backdrop-filter:none}.nur-deen-dialog *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
