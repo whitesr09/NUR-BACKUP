@@ -27,7 +27,8 @@ function setup(){
   const state=()=>w.NURPowerUI.getState();
   const click=(selector,text)=>{const nodes=[...w.document.querySelectorAll(selector)];const n=text?nodes.find(x=>x.textContent.trim()===text):nodes[0];assert.ok(n,`Missing control: ${selector} ${text||''}`);n.click();return n;};
   const submit=form=>form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
-  return {dom,w,state,click,submit,today,yesterday,errors};
+  const editTask=title=>{const row=[...w.document.querySelectorAll('.nur-power-row')].find(x=>x.querySelector('.nur-power-row-copy strong')?.textContent===title);assert.ok(row,`Missing task ${title}`);row.querySelector('button').click();};
+  return {dom,w,state,click,submit,editTask,today,yesterday,errors};
 }
 function close(ctx){ctx.dom.window.close();}
 
@@ -59,19 +60,19 @@ test('recurrence editor creates, edits, and deletes definitions without erasing 
   let form=c.w.document.querySelector('.nur-power-form');
   form.elements.title.value='Weekly revision';form.elements.category.value='Study';
   form.elements.repeat.value='weekdays';form.elements.repeat.dispatchEvent(new c.w.Event('change'));
-  const tomorrow=shift(new Date(),1),weekday=tomorrow.getDay();
+  const weekday=shift(new Date(c.today+'T12:00:00'),1).getDay();
   form.querySelector(`[name=weekday][value="${weekday}"]`).checked=true;
   form.elements.startOn.value=c.today;c.submit(form);
   let s=c.state(),task=s.meta.persistentTasks.find(x=>x.title==='Weekly revision');
   assert.ok(task);assert.equal(task.schedule.type,'weekdays');assert.deepEqual(Array.from(task.schedule.days),[weekday]);
   assert.equal(s.days[c.today].tasks.some(x=>x.id===task.id),false);
-  c.click('.nur-power-row .nur-power-small','Edit');
+  c.editTask('Weekly revision');
   form=c.w.document.querySelector('.nur-power-form');
   form.elements.title.value='Updated study';form.elements.repeat.value='daily';
   form.elements.repeat.dispatchEvent(new c.w.Event('change'));c.submit(form);
   s=c.state();assert.equal(s.days[c.today].tasks.some(x=>x.id===task.id),true);
   assert.equal(s.days[c.yesterday].tasks[0].title,'Study');
-  c.click('.nur-power-row .nur-power-small','Edit');
+  c.editTask('Updated study');
   c.click('.nur-power-danger','Delete');
   s=c.state();assert.equal(s.meta.persistentTasks.some(x=>x.id===task.id),false);
   assert.equal(s.days[c.yesterday].tasks[0].done,true);
@@ -88,7 +89,9 @@ test('goals have editable progress, independent milestones, archive and deletion
   let s=c.state();assert.equal(s.meta.powerGoals.length,1);const id=s.meta.powerGoals[0].id;
   assert.equal(s.meta.powerGoals[0].current,2);
   c.click('.nur-goal-card .nur-power-small','Open goal');
-  let add=c.w.document.querySelector('.nur-power-form-line');add.querySelector('input').value='First chapter';c.submit(add);
+  const add=c.w.document.querySelector('.nur-power-form-line');
+  assert.equal(add.closest('.nur-power-form'),null,'Milestone form must not be nested inside the goal form');
+  add.querySelector('input').value='First chapter';c.submit(add);
   s=c.state();assert.equal(s.meta.powerGoals[0].milestones.length,1);
   assert.equal(s.meta.powerGoals[0].current,2,'Adding a milestone must not reset numeric progress');
   c.click('.nur-power-milestone input');
