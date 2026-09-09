@@ -1,10 +1,12 @@
-/* NUR offline shell. Data stays in local storage; only static resources are cached. */
-const CACHE = 'nur-v2-experience-1';
+/* NUR offline shell. Personal data and backup files are never cached. */
+const CACHE = 'nur-v2-experience-3';
 const PREFIX = 'nur-v2-';
 const CORE = [
   './','./index.html','./styles.css','./v2-refine.css','./v2-header-fix.css',
   './loading.css','./v2-rhythm-fix.css','./v2-daily-light.css','./nur-experience.css',
-  './app.js','./v2-persistent-items.js','./v2-motion.js','./nur-experience.js',
+  './nur-level3.css','./nur-vault.css',
+  './app.js','./v2-persistent-items.js','./nur-power-data.js','./nur-level3.js',
+  './v2-motion.js','./nur-experience.js','./nur-vault.js','./nur-vault-ui.js',
   './manifest.webmanifest','./icon.svg','./assets/loading-bg.jpg',
   './assets/daily-light-bg.jpg'
 ];
