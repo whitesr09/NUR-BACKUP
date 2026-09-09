@@ -63,7 +63,7 @@ test('recurrence editor creates, edits, and deletes definitions without erasing 
   form.querySelector(`[name=weekday][value="${weekday}"]`).checked=true;
   form.elements.startOn.value=c.today;c.submit(form);
   let s=c.state(),task=s.meta.persistentTasks.find(x=>x.title==='Weekly revision');
-  assert.ok(task);assert.equal(task.schedule.type,'weekdays');assert.deepEqual(task.schedule.days,[weekday]);
+  assert.ok(task);assert.equal(task.schedule.type,'weekdays');assert.deepEqual(Array.from(task.schedule.days),[weekday]);
   assert.equal(s.days[c.today].tasks.some(x=>x.id===task.id),false);
   c.click('.nur-power-row .nur-power-small','Edit');
   form=c.w.document.querySelector('.nur-power-form');
