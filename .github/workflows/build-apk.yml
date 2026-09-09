@@ -41,7 +41,9 @@ jobs:
         run: npm install
 
       - name: Run experience regression tests
-        run: node --test tests/*.test.cjs
+        run: |
+          node --test tests/*.test.cjs
+          python3 -m unittest discover -s tests -p 'verify-apk-certificate.test.py' -v
 
       - name: Require and verify original signing identity
         shell: bash
@@ -184,8 +186,7 @@ jobs:
           "$ZIPALIGN" -f -p 4 "$UNSIGNED" "$ALIGNED"
           "$APKSIGNER" sign --ks signing/runtime/nur-release.p12 --ks-type PKCS12 --ks-key-alias nur-release --ks-pass env:NUR_SIGNING_PASSWORD --key-pass env:NUR_SIGNING_PASSWORD --out "$SIGNED" "$ALIGNED"
           "$APKSIGNER" verify --verbose --print-certs "$SIGNED"
-          CERT="$("$APKSIGNER" verify --print-certs "$SIGNED" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr -d ':[:space:]' | tr '[:upper:]' '[:lower:]')"
-          test "$CERT" = "$EXPECTED_CERT_SHA256" || { echo "::error::Unexpected signing certificate"; exit 1; }
+          python3 scripts/verify_apk_certificate.py "$APKSIGNER" "$SIGNED" "$EXPECTED_CERT_SHA256"
           BADGING="$("$AAPT" dump badging "$SIGNED")"
           echo "$BADGING" | grep -F "name='$APP_ID'" >/dev/null
           echo "$BADGING" | grep -F "versionCode='$NUR_VERSION_CODE'" >/dev/null
