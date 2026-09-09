@@ -1,1 +1,0 @@
-Implementation will use separate pure data helpers and a custom interface adapter. Existing personal data remains in its current storage namespace with migration safeguards. A single release is planned after development, not after every commit.
