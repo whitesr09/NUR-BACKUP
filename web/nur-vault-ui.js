@@ -14,16 +14,19 @@ const say=message=>{notice.textContent=message;};
 function close(){if(busy)return;if(typeof dialog.close==='function'&&dialog.open)dialog.close();else dialog.removeAttribute('open');if(previousFocus?.isConnected)previousFocus.focus();previousFocus=null;}
 function open(){if(dialog.open)return;previousFocus=doc.activeElement;draw();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');closeButton.focus();}
 dialog.addEventListener('click',e=>{if(e.target===dialog)close();});
+dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
 function row(label,value){const n=el('div','nur-vault-row');n.append(el('span','',label),el('strong','',String(value)));return n;}
-function createFile(raw){const name='NUR-backup-'+V.localDate()+'.json';return new File([raw],name,{type:'application/json'});}
+function createFile(raw){return new File([raw],'NUR-backup-'+V.localDate()+'.json',{type:'application/json'});}
 async function exportFile(){
  if(busy)return;busy=true;say('Preparing your private backup…');
  try{
   const raw=V.makeBackup(window.NURPowerUI.getState(),window.NURAppearance?.get?.()||null);
-  const file=createFile(raw);
-  const cap=window.Capacitor;
-  if(cap?.isNativePlatform?.()&&cap.registerPlugin){
-   const filesystem=cap.registerPlugin('Filesystem');const share=cap.registerPlugin('Share');
+  const file=createFile(raw);const cap=window.Capacitor;
+  if(cap?.isNativePlatform?.()){
+   if(cap.isPluginAvailable&&(!cap.isPluginAvailable('Filesystem')||!cap.isPluginAvailable('Share')))throw Error('Native file saving is unavailable in this build.');
+   const filesystem=cap.Plugins?.Filesystem||cap.registerPlugin?.('Filesystem');
+   const share=cap.Plugins?.Share||cap.registerPlugin?.('Share');
+   if(!filesystem||!share)throw Error('Native file saving is unavailable in this build.');
    const bytes=new TextEncoder().encode(raw);let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
    const saved=await filesystem.writeFile({path:file.name,data:btoa(binary),directory:'CACHE'});
    await share.share({title:'NUR backup',text:'Keep this backup private.',url:saved.uri,dialogTitle:'Save or share NUR backup'});
@@ -38,14 +41,10 @@ async function exportFile(){
 }
 function finishRestore(prepared){
  if(busy)return;
- const s=prepared.summary;
  if(!window.confirm('Replace the current NUR data with this backup? A recovery copy of the current data will be kept on this device.'))return;
  busy=true;
- try{
-  V.restore(localStorage,prepared);
-  say('Restore saved. Reloading NUR…');
-  window.location.reload();
- }catch(error){say(error.message||'Restore failed. Your data was not replaced.');busy=false;}
+ try{V.restore(localStorage,prepared);say('Restore saved. Reloading NUR…');window.location.reload();}
+ catch(error){say(error.message||'Restore failed. Your data was not replaced.');busy=false;}
 }
 function draw(){
  pending=null;content.replaceChildren();say('');
@@ -60,14 +59,14 @@ function draw(){
   if(file.size>V.MAX_BYTES){say('The backup is larger than 16 MB.');return;}
   say('Checking the selected backup…');
   try{
-   const raw=await file.text();const prepared=V.inspect(raw,P,V.localDate(),window.NurAppearance||null);
+   const raw=await file.text();const prepared=V.inspect(raw,P,V.localDate());
    pending=prepared;const s=prepared.summary;
    preview.append(el('h3','','Backup preview'),row('Tracking since',s.startedOn||'Unknown'),row('Recorded days',s.days),row('Amanah',s.tasks),row('Muhasaba',s.intentions),row('Goals',s.goals),row('Notes',s.notes),row('Money entries',s.money));
    preview.append(el('p','nur-vault-warning','Restoring replaces your current data. It does not merge records.'));
    preview.append(button('Replace with this backup','nur-power-danger',()=>{if(pending)finishRestore(pending);}));say('Backup validated. Review the details before restoring.');
   }catch(error){say(error.message||'This file is not a valid NUR backup.');}
  });
- const saved=V.recovery(localStorage);
+ let saved=null;try{saved=V.recovery(localStorage);}catch(error){content.append(el('p','nur-vault-warning','The previous recovery copy could not be read. Export a fresh backup before restoring.'));}
  if(saved){const recovery=el('section','nur-vault-section');recovery.append(el('h3','','Previous recovery copy'),el('p','nur-power-help','A local copy of the data from before your last restore is available.'));
  recovery.append(button('Restore previous data','nur-power-small',()=>{
   if(!window.confirm('Replace current data with the previous recovery copy?'))return;
