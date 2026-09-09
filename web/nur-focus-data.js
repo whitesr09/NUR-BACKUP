@@ -6,11 +6,11 @@
 })(typeof window!=='undefined'?window:null,function(){
 'use strict';
 const VERSION=1,MAX_HISTORY=5000;
-const clone=x=>JSON.parse(JSON.stringify(x));
 const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const text=(x,max=180)=>String(x??'').trim().slice(0,max);
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
 const validTime=x=>finite(x)&&x>=0&&x<=8640000000000000;
+const validDate=k=>typeof k==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(k)&&!Number.isNaN(Date.parse(k+'T12:00:00'))&&new Date(k+'T12:00:00').toISOString().slice(0,10)===k;
 const localDate=ms=>{const d=new Date(ms);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 const empty=()=>({version:VERSION,durationSeconds:1500,clock:null,sessions:[]});
 function validate(input){
@@ -20,9 +20,10 @@ function validate(input){
  if(!Array.isArray(input.sessions)||input.sessions.length>MAX_HISTORY)throw Error('Invalid focus history.');
  const ids=new Set();
  const sessions=input.sessions.map(s=>{
-  if(!object(s)||!text(s.id)||ids.has(s.id)||!validTime(s.startedAt)||!validTime(s.endedAt)||s.endedAt<s.startedAt||!Number.isInteger(s.durationSeconds)||s.durationSeconds<60||s.durationSeconds>10800||!text(s.date)||s.date!==localDate(s.endedAt))throw Error('Invalid focus session.');
-  ids.add(s.id);
-  return {id:text(s.id,100),startedAt:s.startedAt,endedAt:s.endedAt,date:s.date,durationSeconds:s.durationSeconds,label:text(s.label),taskId:text(s.taskId,100)||null};
+  const id=object(s)?text(s.id,100):'';
+  if(!id||ids.has(id)||!validTime(s.startedAt)||!validTime(s.endedAt)||s.endedAt<s.startedAt||!Number.isInteger(s.durationSeconds)||s.durationSeconds<60||s.durationSeconds>10800||!validDate(s.date))throw Error('Invalid focus session.');
+  ids.add(id);
+  return {id,startedAt:s.startedAt,endedAt:s.endedAt,date:s.date,durationSeconds:s.durationSeconds,label:text(s.label),taskId:text(s.taskId,100)||null};
  });
  let clock=null;
  if(input.clock!==null&&input.clock!==undefined){
@@ -67,12 +68,13 @@ function resume(input,now){
 function stop(input){const s=validate(input);s.clock=null;return s;}
 function finish(input,now,id){
  const s=validate(input),c=s.clock;
- if(!c||elapsed(c,now)<c.durationSeconds*1000)throw Error('Complete the timer before recording a session.');
+ if(!c||!validTime(now)||now<c.startedAt||elapsed(c,now)<c.durationSeconds*1000)throw Error('Complete the timer before recording a session.');
  const sessionId=text(id,100);
  if(!sessionId||s.sessions.some(x=>x.id===sessionId)||s.sessions.length>=MAX_HISTORY)throw Error('Invalid or duplicate session ID.');
  s.sessions.push({id:sessionId,startedAt:c.startedAt,endedAt:now,date:localDate(now),durationSeconds:c.durationSeconds,label:c.label,taskId:c.taskId});s.clock=null;return s;
 }
 function summary(input,date){
+ if(!validDate(date))throw Error('Invalid summary date.');
  const s=validate(input),items=s.sessions.filter(x=>x.date===date);
  return {count:items.length,minutes:Math.round(items.reduce((n,x)=>n+x.durationSeconds,0)/60)};
 }
