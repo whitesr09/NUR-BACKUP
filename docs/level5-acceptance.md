@@ -1,0 +1,3 @@
+# Levels 11–13 acceptance
+
+A feature is implemented only when its source is connected to the application and its tests pass. Required checks: real attributed Quran content and separate bookmarks; no fabricated reading history; valid location and date handling; five prayer times with independent offsets and no automatic prayer completion; clear unsupported-state behavior for notifications; Gemini key entry, show/hide, save/replace/delete, model selection, connection test, explicit context sharing, safe failure and chat cancellation. No API key or private user data may be written to a public repository or normal backup. The first release must preserve the existing application identity and historical data. Source-only tests are permitted; APK builds are deferred.
