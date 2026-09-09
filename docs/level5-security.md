@@ -1,0 +1,5 @@
+# NUR AI security boundary
+
+The user owns and supplies the Gemini key. Never hardcode or publish a key. Prefer Android Keystore-backed storage and an in-memory-only browser fallback; do not put a key in localStorage, tracking state, the service worker, URLs, logs, exports, or backups. A device-compromise-resistant or server-hidden key cannot be promised for direct client-side calls. The native implementation must be reviewed before claiming secure storage is available.
+
+No tracking records are sent to Gemini by default. The user must explicitly select any local context per request. Use a fixed provider endpoint, bounded request/response sizes, a timeout and cancellation, provider error codes rather than raw potentially sensitive errors, and user-controlled deletion. Chat history remains local unless the user sends selected messages. Do not silently enable provider search, tools, or additional third-party integrations. Religious answers must identify uncertainty and distinguish verified source quotations from generated commentary.
