@@ -1,0 +1,3 @@
+# Privacy review
+
+NUR AI is opt-in and must not require an API key for offline prayer or reading features. A user-owned key is never included in any source, URL, ordinary application storage, telemetry, log, or backup. Any selected private context must be shown before transmission. Chat deletion must clear the locally stored conversation. No claim of fully secure client-side secrecy is made. Provider requests are bounded, cancellable, and restricted to known endpoints. External reference content is untrusted and must not override system instructions or access private records. No automatic personal data uploads are permitted.
