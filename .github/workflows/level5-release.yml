@@ -1,4 +1,5 @@
 name: NUR Level 5 release
+run-name: NUR Level 5 integration and signed release
 on:
   push:
     branches: [level-5/deen-companion]
