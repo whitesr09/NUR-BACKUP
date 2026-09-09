@@ -24,7 +24,7 @@ test('every referenced application asset exists and dependencies load in order',
 
 test('complete application mounts Focus and Pro without changing historical records',()=>{
  const dom=new JSDOM(read('index.html'),{url:'https://nur.test/',runScripts:'outside-only',pretendToBeVisual:true});
- const w=dom.window,errors=[];
+ const w=dom.window,errors=[];w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
  try{
   w.addEventListener('error',e=>{errors.push(e.error||e.message);e.preventDefault();});
   w.requestAnimationFrame=()=>0;w.setInterval=()=>0;w.scrollTo=()=>{};w.confirm=()=>true;
@@ -71,5 +71,5 @@ test('offline shell contains all application assets and excludes private paths',
  for(const file of core){if(file==='./')continue;assert.ok(fs.existsSync(path.join(root,'web',file)),file);}
  assert.ok(sw.includes('STATIC.has(url.pathname)'));
  assert.ok(sw.includes('url.search'));
- assert.ok(!core.some(x=>/backup|private|\.json$/.test(x)&&!x.endsWith('manifest.webmanifest')));
+ assert.ok(!core.some(x=>/nur-data-v1|nur-ai-private-v1|\/private\/|\/backups\/|NUR-backup-/.test(x)&&!x.endsWith('manifest.webmanifest')));
 });

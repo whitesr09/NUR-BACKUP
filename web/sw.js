@@ -11,7 +11,7 @@ const CORE=[
  './nur-progress.js','./nur-pro.js','./vendor/adhan.js','./nur-deen-core.js',
  './nur-deen-content.js','./nur-deen-harden.js','./nur-ai-secrets.js',
  './nur-deen-store.js','./nur-deen-backup.js','./nur-deen-app.js',
- './manifest.webmanifest','./icon.svg','./assets/loading-bg.jpg','./assets/daily-light-bg.jpg'
+ './manifest.webmanifest','./icon.svg','./assets/quran-uthmani.json','./assets/loading-bg.jpg','./assets/daily-light-bg.jpg'
 ];
 const STATIC=new Set(CORE.map(path=>new URL(path,self.registration.scope).pathname));
 self.addEventListener('install',event=>{
