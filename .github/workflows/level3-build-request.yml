@@ -1,0 +1,20 @@
+name: Level 3 build request
+
+on:
+  push:
+    branches: ["level-3/release-candidate"]
+    paths:
+      - ".github/workflows/level3-build-request.yml"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request signed APK build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-apk.yml --repo "$GITHUB_REPOSITORY" --ref level-3/release-candidate
