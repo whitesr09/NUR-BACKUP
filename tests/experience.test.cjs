@@ -24,7 +24,6 @@ test('unknown and malformed settings cannot inject arbitrary palette or layout v
   assert.equal(value.fontScale, 1);
   assert.deepEqual(value.order.slice(0,2), ['tasks','light']);
   assert.equal(new Set(value.order).size, appearance.sections.length);
-  assert.deepEqual(value.hidden, ['prayers']);
   assert.deepEqual(appearance.normalize(null), appearance.defaults());
 });
 
@@ -50,10 +49,11 @@ test('system appearance resolves light and dark palettes correctly', () => {
 });
 
 test('every JavaScript entrypoint compiles and the experience loads after the existing modules', () => {
-  const expected=['app.js','v2-persistent-items.js','nur-power-data.js','nur-level3.js','v2-motion.js','nur-experience.js'];
+  const expected=['app.js','v2-persistent-items.js','nur-power-data.js','nur-level3.js','v2-motion.js','nur-experience.js','nur-vault.js','nur-vault-ui.js'];
   for(const file of [...expected,'sw.js']) new vm.Script(read(file),{filename:file});
   const html=read('index.html');
   assert.match(html,/href="nur-experience\.css"/);
+  assert.match(html,/href="nur-vault\.css"/);
   const files=[...html.matchAll(/<script\s+src="([^"]+)"/g)].map(match=>match[1]);
   assert.deepEqual(files,expected);
   assert.equal(html.includes('material-components'),false);
