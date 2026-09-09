@@ -19,4 +19,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run build-apk.yml --repo "$GITHUB_REPOSITORY" --ref level-3/release-candidate
       - name: Record release request
-        run: echo "Requested Level 3 release with corrected certificate verification."
+        run: echo "Requested Level 3 release after fixing certificate test discovery."
