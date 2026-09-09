@@ -1,0 +1,18 @@
+/* NUR Vault inherits the signature palette and existing dialog design. */
+.nur-vault-dialog .nur-power-shell{max-height:calc(100dvh - 24px)}
+.nur-vault-dialog .nur-power-content{display:grid;gap:18px;overflow-y:auto;overscroll-behavior:contain}
+.nur-vault-dialog h3{font-size:17px;color:var(--nur-text,#f4f0e7);margin:0 0 10px}
+.nur-vault-section{display:grid;gap:12px;border-top:1px solid var(--nur-line,#32445c);padding-top:20px;min-width:0}
+.nur-vault-section .nur-power-help{margin:0}
+.nur-vault-warning{font-size:12px;line-height:1.6;color:var(--nur-muted,#a2afc1);margin:0}
+.nur-vault-preview{display:grid;gap:8px;min-width:0}
+.nur-vault-preview:empty{display:none}
+.nur-vault-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--nur-line,#32445c);font-size:13px;color:var(--nur-muted,#a2afc1)}
+.nur-vault-row strong{color:var(--nur-text,#f4f0e7);font-weight:600;text-align:right;overflow-wrap:anywhere}
+.nur-vault-preview .nur-power-danger{justify-self:start;margin-top:8px}
+.nur-vault-launch{min-height:40px}
+.nur-vault-dialog input[type=file]{height:auto;min-height:46px;white-space:normal;overflow-wrap:anywhere}
+.nur-vault-dialog input[type=file]::file-selector-button{border:1px solid var(--nur-line,#32445c);background:var(--nur-card,#0b1b30);color:var(--nur-text,#f4f0e7);border-radius:8px;padding:8px;margin-right:10px;font:inherit}
+.nur-vault-dialog button:focus-visible{outline:2px solid var(--nur-accent,#e6ad42);outline-offset:3px}
+.nur-vault-dialog [hidden]{display:none!important}
+@media(max-width:480px){.nur-vault-row{gap:10px}.nur-vault-dialog .nur-power-content{gap:16px}.nur-vault-launch{width:100%}}
